@@ -97,12 +97,12 @@ func (krpc *KRPC) Query(msg *KRPCMessage) {
 	if query, ok := msg.Addion.(*Query); ok {
 		krpc.Dht.log.Println(query.Y)
 		if query.Y == "get_peers" {
-			krpc.Dht.log.Println("【 get_peers 】")
+			//krpc.Dht.log.Println("【 get_peers 】")
 
 			if infohash, ok := query.A["info_hash"].(string); ok {
 				//krpc.Dht.log.Println(Id(infohash).String())
 
-				krpc.Dht.dao.HashIns1.Exec(Id(infohash).String())
+				//krpc.Dht.dao.HashIns1.Exec(Id(infohash).String())
 				//ih := Id(infohash)
 
 				nodes := ConvertByteStream(krpc.Dht.table.Snodes)
@@ -182,7 +182,7 @@ func (krpc *KRPC) EncodingNodeResult(tid string, token string, nodes []byte) (st
 	}
 	args["nodes"] = bytes.NewBuffer(nodes).String()
 	v["r"] = args
-	krpc.Dht.log.Println(v)
+	//krpc.Dht.log.Println(v)
 	s, err := bencode.EncodeString(v)
 	return s, err
 }
