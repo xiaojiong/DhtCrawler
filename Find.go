@@ -1,4 +1,4 @@
-package godht
+package DhtCrawler
 
 import (
 	"fmt"
@@ -44,27 +44,31 @@ func (dhtNode *DhtNode) FindNode(node *KNode) {
 }
 
 func (dhtNode *DhtNode) NodeFinder() {
-	for _, host := range BOOTSTRAP {
-		raddr, err := net.ResolveUDPAddr("udp", host)
-		if err != nil {
-			dhtNode.log.Fatalf("Resolve DNS error, %s\n", err)
-			return
-		}
-		node := new(KNode)
-		node.Port = raddr.Port
-		node.Ip = raddr.IP
-		node.Id = nil
-
-		dhtNode.FindNode(node)
-	}
 
 	for {
-		dhtNode.log.Println(len(dhtNode.table.Nodes), "port: ==== ", dhtNode.node.Port)
-		for _, node := range dhtNode.table.Nodes {
-			dhtNode.FindNode(node)
+		//	dhtNode.log.Println(len(dhtNode.table.Nodes), "port: ==== ", dhtNode.node.Port)
+
+		if len(dhtNode.table.Nodes) == 0 {
+			for _, host := range BOOTSTRAP {
+				raddr, err := net.ResolveUDPAddr("udp", host)
+				if err != nil {
+					dhtNode.log.Fatalf("Resolve DNS error, %s\n", err)
+					return
+				}
+				node := new(KNode)
+				node.Port = raddr.Port
+				node.Ip = raddr.IP
+				node.Id = nil
+
+				dhtNode.FindNode(node)
+			}
+		} else {
+			for _, node := range dhtNode.table.Nodes {
+				dhtNode.FindNode(node)
+			}
+			dhtNode.table.Nodes = nil
+			time.Sleep(1 * time.Second)
 		}
-		dhtNode.table.Nodes = nil
-		time.Sleep(1 * time.Second)
 
 	}
 }

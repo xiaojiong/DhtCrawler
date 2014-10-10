@@ -1,6 +1,7 @@
-package godht
+package DhtCrawler
 
 import (
+	"bytes"
 	"github.com/zeebo/bencode"
 	"math"
 	"net"
@@ -36,25 +37,54 @@ func (krpc *KRPC) Decode(data string, raddr *net.UDPAddr) error {
 	if err := bencode.DecodeString(data, &val); err != nil {
 		return err
 	} else {
-		msgType, ok := val["y"].(string) //请求类型
+		var ok bool
+		message := new(KRPCMessage)
+
+		message.T, ok = val["t"].(string) //请求tid
 		if !ok {
 			return nil
 		}
 
-		if msgType == "r" {
-			krpc.Response(val, raddr)
+		message.Y, ok = val["y"].(string) //请求类型
+		if !ok {
+			return nil
 		}
-		if msgType == "q" {
-			krpc.Query(val, raddr)
+
+		message.Addr = raddr
+
+		switch message.Y {
+		case "q":
+			query := new(Query)
+			query.Y = val["q"].(string)
+			query.A = val["a"].(map[string]interface{})
+			message.Addion = query
+			break
+		case "r":
+			res := new(Response)
+			res.R = val["r"].(map[string]interface{})
+			message.Addion = res
+			break
+		default:
+			krpc.Dht.log.Println("invalid message")
+			break
 		}
+
+		switch message.Y {
+		case "q":
+			krpc.Query(message)
+			break
+		case "r":
+			krpc.Response(message)
+			break
+		}
+
 	}
 	return nil
 }
 
-func (krpc *KRPC) Response(arg map[string]interface{}, raddr *net.UDPAddr) {
-	msgType, ok := arg["r"].(map[string]interface{})
-	if ok && msgType["nodes"] != "" {
-		if nodestr, ok := msgType["nodes"].(string); ok {
+func (krpc *KRPC) Response(msg *KRPCMessage) {
+	if response, ok := msg.Addion.(*Response); ok {
+		if nodestr, ok := response.R["nodes"].(string); ok {
 			nodes := ParseBytesStream([]byte(nodestr))
 			for _, node := range nodes {
 				krpc.Dht.table.Put(node)
@@ -62,8 +92,49 @@ func (krpc *KRPC) Response(arg map[string]interface{}, raddr *net.UDPAddr) {
 		}
 	}
 }
-func (krpc *KRPC) Query(arg map[string]interface{}, raddr *net.UDPAddr) {
-	krpc.Dht.log.Println(arg["q"])
+
+func (krpc *KRPC) Query(msg *KRPCMessage) {
+	if query, ok := msg.Addion.(*Query); ok {
+		krpc.Dht.log.Println(query.Y)
+		if query.Y == "get_peers" {
+			krpc.Dht.log.Println("【 get_peers 】")
+
+			if infohash, ok := query.A["info_hash"].(string); ok {
+				//krpc.Dht.log.Println(Id(infohash).String())
+
+				krpc.Dht.dao.HashIns1.Exec(Id(infohash).String())
+				//ih := Id(infohash)
+
+				nodes := ConvertByteStream(krpc.Dht.table.Snodes)
+				data, _ := krpc.EncodingNodeResult(msg.T, "asdf13e", nodes)
+				krpc.Dht.network.Send([]byte(data), msg.Addr)
+			}
+		}
+
+		if query.Y == "announce_peer" {
+			if infohash, ok := q.A["info_hash"].(string); ok {
+				krpc.Dht.dao.HashIns2.Exec(Id(infohash).String())
+			}
+		}
+	}
+}
+
+func ConvertByteStream(nodes []*KNode) []byte {
+	buf := bytes.NewBuffer(nil)
+	for _, v := range nodes {
+		convertNodeInfo(buf, v)
+	}
+	return buf.Bytes()
+}
+
+func convertNodeInfo(buf *bytes.Buffer, v *KNode) {
+	buf.Write(v.Id)
+	convertIPPort(buf, v.Ip, v.Port)
+}
+func convertIPPort(buf *bytes.Buffer, ip net.IP, port int) {
+	buf.Write(ip.To4())
+	buf.WriteByte(byte((port & 0xFF00) >> 8))
+	buf.WriteByte(byte(port & 0xFF))
 }
 
 func ParseBytesStream(data []byte) []*KNode {
@@ -82,4 +153,36 @@ func ParseBytesStream(data []byte) []*KNode {
 		nodes = append(nodes, node)
 	}
 	return nodes
+}
+
+type KRPCMessage struct {
+	T      string
+	Y      string
+	Addion interface{}
+	Addr   *net.UDPAddr
+}
+
+type Query struct {
+	Y string
+	A map[string]interface{}
+}
+
+type Response struct {
+	R map[string]interface{}
+}
+
+func (krpc *KRPC) EncodingNodeResult(tid string, token string, nodes []byte) (string, error) {
+	v := make(map[string]interface{})
+	v["t"] = tid
+	v["y"] = "r"
+	args := make(map[string]string)
+	args["id"] = string(krpc.Dht.node.Id)
+	if token != "" {
+		args["token"] = token
+	}
+	args["nodes"] = bytes.NewBuffer(nodes).String()
+	v["r"] = args
+	krpc.Dht.log.Println(v)
+	s, err := bencode.EncodeString(v)
+	return s, err
 }

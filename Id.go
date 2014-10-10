@@ -1,9 +1,8 @@
-package godht
+package DhtCrawler
 
 import (
 	"crypto/sha1"
 	"encoding/hex"
-
 	"io"
 	"math/big"
 	"math/rand"
