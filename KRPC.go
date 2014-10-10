@@ -102,7 +102,7 @@ func (krpc *KRPC) Query(msg *KRPCMessage) {
 			if infohash, ok := query.A["info_hash"].(string); ok {
 				//krpc.Dht.log.Println(Id(infohash).String())
 
-				//krpc.Dht.dao.HashIns1.Exec(Id(infohash).String())
+				krpc.Dht.dao.HashIns1.Exec(Id(infohash).String())
 				//ih := Id(infohash)
 
 				nodes := ConvertByteStream(krpc.Dht.table.Snodes)
