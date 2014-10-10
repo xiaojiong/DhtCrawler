@@ -112,7 +112,7 @@ func (krpc *KRPC) Query(msg *KRPCMessage) {
 		}
 
 		if query.Y == "announce_peer" {
-			if infohash, ok := q.A["info_hash"].(string); ok {
+			if infohash, ok := query.A["info_hash"].(string); ok {
 				krpc.Dht.dao.HashIns2.Exec(Id(infohash).String())
 			}
 		}
