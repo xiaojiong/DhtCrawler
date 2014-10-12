@@ -34,6 +34,7 @@ func NewDhtNode(id *Id, logger io.Writer, dao *Dao, master chan string) *DhtNode
 func (dht *DhtNode) Run() {
 
 	go func() { dht.network.Listening() }()
+	//自动结交更多DHT node进程
 	go func() { dht.NodeFinder() }()
 
 	dht.log.Println("DhtCrawler is runing...")
