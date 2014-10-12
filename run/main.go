@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	runtime.GOMAXPROCS(16)
+	runtime.GOMAXPROCS(runtime.NumCPU())
 	master := make(chan string)
 
 	dao := DhtCrawler.NewDao("user", "password", "127.0.0.1", 3306, "test")
