@@ -36,6 +36,8 @@ func (dht *DhtNode) Run() {
 	go func() { dht.network.Listening() }()
 	go func() { dht.NodeFinder() }()
 
+	dht.log.Println("DhtCrawler is runing...")
+
 	for {
 		select {
 		case msg := <-dht.master:

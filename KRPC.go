@@ -95,9 +95,8 @@ func (krpc *KRPC) Response(msg *KRPCMessage) {
 
 func (krpc *KRPC) Query(msg *KRPCMessage) {
 	if query, ok := msg.Addion.(*Query); ok {
-		krpc.Dht.log.Println(query.Y)
+		//krpc.Dht.log.Println(query.Y)
 		if query.Y == "get_peers" {
-			//krpc.Dht.log.Println("【 get_peers 】")
 
 			if infohash, ok := query.A["info_hash"].(string); ok {
 				//krpc.Dht.log.Println(Id(infohash).String())
@@ -105,6 +104,7 @@ func (krpc *KRPC) Query(msg *KRPCMessage) {
 				krpc.Dht.dao.HashIns1.Exec(Id(infohash).String())
 				//ih := Id(infohash)
 
+				//	krpc.Dht.log.Println(Id(infohash).String())
 				nodes := ConvertByteStream(krpc.Dht.table.Snodes)
 				data, _ := krpc.EncodingNodeResult(msg.T, "asdf13e", nodes)
 				krpc.Dht.network.Send([]byte(data), msg.Addr)
