@@ -62,7 +62,7 @@ func (mq *MSQ) addMessage(hash string, queueIdx int) {
 	easy.Setopt(curl.OPT_URL, fmt.Sprintf("http://%s.mqs-cn-hangzhou.aliyuncs.com/%s/messages", mq.accessOwnerId, queueName))
 
 	easy.Setopt(curl.OPT_HTTPHEADER, []string{
-		fmt.Sprintf("Host:%s.mqs-cn-qingdao.aliyuncs.com", mq.accessOwnerId),
+		fmt.Sprintf("Host:%s.mqs-cn-hangzhou.aliyuncs.com", mq.accessOwnerId),
 		"Date:" + date_gmt,
 		"x-mqs-version:2014-07-08",
 		"Content-Type:" + content_type,
