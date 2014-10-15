@@ -95,14 +95,11 @@ func (krpc *KRPC) Response(msg *KRPCMessage) {
 
 func (krpc *KRPC) Query(msg *KRPCMessage) {
 	if query, ok := msg.Addion.(*Query); ok {
-		//krpc.Dht.log.Println(query.Y) 干掉输出避免磁盘写盘的情况
+		krpc.Dht.log.Println(query.Y) //干掉输出避免磁盘写盘的情况
 		if query.Y == "get_peers" {
 
 			if infohash, ok := query.A["info_hash"].(string); ok {
-				//krpc.Dht.log.Println(Id(infohash).String())
-
-				krpc.Dht.dao.HashIns1.Exec(Id(infohash).String())
-				//ih := Id(infohash)
+				//krpc.Dht.dao.HashIns1.Exec(Id(infohash).String())
 				krpc.Dht.msq.addMessage(Id(infohash).String(), 1)
 
 				//	krpc.Dht.log.Println(Id(infohash).String())
