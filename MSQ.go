@@ -7,7 +7,9 @@ import (
 )
 
 type MSQ struct {
-	mem *memcache.Connection
+	mem      *memcache.Connection
+	hashBox1 []*string
+	hashBox2 []*string
 }
 
 func NewMSQ(dns string) *MSQ {
@@ -25,11 +27,34 @@ func NewMSQ(dns string) *MSQ {
 
 func (mq *MSQ) addMessage(hash string, queueIdx int) {
 
-	stored, err := mq.mem.Set(fmt.Sprintf("dht-hash-%d", queueIdx), 0, 0, []byte(hash))
-	if err != nil {
-		fmt.Printf("mq error Set: %v\n", err)
+	var sendVal string
+	if queueIdx == 1 {
+		mq.hashBox1 = append(mq.hashBox1, &hash)
+		if len(mq.hashBox1) == 20 {
+			for _, hash := range mq.hashBox1 {
+				sendVal = sendVal + *hash + "{||}"
+			}
+			mq.hashBox1 = nil
+		}
 	}
-	if !stored {
-		fmt.Printf("mq error want true, got %v\n", stored)
+
+	if queueIdx == 2 {
+		mq.hashBox2 = append(mq.hashBox2, &hash)
+		if len(mq.hashBox2) == 20 {
+			for _, hash := range mq.hashBox2 {
+				sendVal = sendVal + *hash + "{||}"
+			}
+			mq.hashBox2 = nil
+		}
+	}
+
+	if sendVal != "" {
+		stored, err := mq.mem.Set(fmt.Sprintf("dht-hash-%d", queueIdx), 0, 0, []byte(sendVal))
+		if err != nil {
+			fmt.Printf("mq error Set: %v\n", err)
+		}
+		if !stored {
+			fmt.Printf("mq error want true, got %v\n", stored)
+		}
 	}
 }
