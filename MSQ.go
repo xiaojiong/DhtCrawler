@@ -54,7 +54,10 @@ func (mq *MSQ) addMessage(hash string, queueIdx int) {
 			fmt.Printf("mq error Set: %v\n", err)
 		}
 		if !stored {
-			fmt.Printf("mq error want true, got %v\n", stored)
+			s, _ := mq.mem.Set(fmt.Sprintf("dht-hash-%d", queueIdx), 0, 0, []byte(sendVal))
+			if !s {
+				fmt.Printf("mq error want true, got %v\n", stored)
+			}
 		}
 	}
 }
