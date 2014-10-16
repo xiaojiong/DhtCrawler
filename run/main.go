@@ -11,7 +11,7 @@ func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	master := make(chan string)
 
-	msq := DhtCrawler.NewMSQ("us9SIfeWOQwy8K5q", "FfYoHFqMJfCLz8a2BZMItkQfSbgY9B", "htbym61nsw")
+	msq := DhtCrawler.NewMSQ("127.0.0.1:123456")
 	//dao := DhtCrawler.NewDao("user", "password", "127.0.0.1", 3306, "test")
 	//进程数量
 	for i := 0; i < 20; i++ {
