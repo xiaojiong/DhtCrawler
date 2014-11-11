@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
+	"time"
 )
 
 type Dao struct {
@@ -36,17 +37,11 @@ func (dao *Dao) Init() {
 		panic(err.Error()) // Just for example purpose. You should use proper error handling instead of panic
 	}
 	dao.db = db
-
-	HashIns1, err := dao.db.Prepare("INSERT INTO `hash1` (`id`, `hash`) VALUES (NULL, ?);")
+	sql := fmt.Sprintf("INSERT INTO `hash-%s` (`id`, `hash`) VALUES (NULL, ?);", time.Now().Format("2006-01-02"))
+	HashIns1, err := dao.db.Prepare(sql)
 	if err != nil {
 		panic(err.Error()) // proper error handling instead of panic in your app
 	}
 	dao.HashIns1 = HashIns1
-
-	HashIns2, err := dao.db.Prepare("INSERT INTO `hash2` (`id`, `hash`) VALUES (NULL, ?);")
-	if err != nil {
-		panic(err.Error()) // proper error handling instead of panic in your app
-	}
-	dao.HashIns2 = HashIns2
 
 }

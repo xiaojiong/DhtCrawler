@@ -16,13 +16,13 @@ type DhtNode struct {
 	msq     *MSQ
 }
 
-func NewDhtNode(id *Id, logger io.Writer, msq *MSQ, master chan string) *DhtNode {
+func NewDhtNode(id *Id, logger io.Writer, dao *Dao, master chan string) *DhtNode {
 	node := new(KNode)
 	node.Id = *id
 
 	dht := new(DhtNode)
-	//dht.dao = dao
-	dht.msq = msq
+	dht.dao = dao
+	//dht.msq = msq
 	dht.log = log.New(logger, "", log.Ldate|log.Ltime|log.Lmicroseconds|log.Lshortfile)
 	dht.node = node
 	dht.table = new(KTable)
