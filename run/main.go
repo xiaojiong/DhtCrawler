@@ -1,23 +1,26 @@
 package main
 
 import (
+	"DhtCrawler"
 	"fmt"
-	"github.com/xiaojiong/DhtCrawler"
 	"os"
 	"runtime"
 )
 
 func main() {
-	runtime.GOMAXPROCS(runtime.NumCPU())
+	runtime.GOMAXPROCS(2)
+
+	//主进程
 	master := make(chan string)
 
-	msq := DhtCrawler.NewMSQ("127.0.0.1:123456")
-	dao := DhtCrawler.NewDao("user", "password", "127.0.0.1", 3306, "test")
-	//进程数量
-	for i := 0; i < 20; i++ {
+	//爬虫输出抓取到的hashIds通道
+	outHashIdChan := make(chan string)
+
+	//开启的dht节点
+	for i := 0; i < 2; i++ {
 		go func() {
 			id := DhtCrawler.GenerateID()
-			dhtNode := DhtCrawler.NewDhtNode(&id, os.Stdout, dao, msq, master)
+			dhtNode := DhtCrawler.NewDhtNode(&id, os.Stdout, outHashIdChan, master)
 
 			dhtNode.Run()
 		}()
@@ -25,6 +28,11 @@ func main() {
 
 	for {
 		select {
+
+		//输出爬虫抓取的HashId结果
+		case hashId := <-outHashIdChan:
+			fmt.Println(hashId)
+
 		case msg := <-master:
 			fmt.Println(msg)
 		}

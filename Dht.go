@@ -1,6 +1,7 @@
 package DhtCrawler
 
 import (
+	"fmt"
 	"io"
 	"log"
 )
@@ -12,17 +13,15 @@ type DhtNode struct {
 	log     *log.Logger
 	master  chan string
 	krpc    *KRPC
-	dao     *Dao
-	msq     *MSQ
+	outChan chan string
 }
 
-func NewDhtNode(id *Id, logger io.Writer, dao *Dao, msq *MSQ, master chan string) *DhtNode {
+func NewDhtNode(id *Id, logger io.Writer, outHashIdChan chan string, master chan string) *DhtNode {
 	node := new(KNode)
 	node.Id = *id
 
 	dht := new(DhtNode)
-	dht.dao = dao
-	dht.msq = msq
+	dht.outChan = outHashIdChan
 	dht.log = log.New(logger, "", log.Ldate|log.Ltime|log.Lmicroseconds|log.Lshortfile)
 	dht.node = node
 	dht.table = new(KTable)
@@ -35,11 +34,13 @@ func NewDhtNode(id *Id, logger io.Writer, dao *Dao, msq *MSQ, master chan string
 
 func (dht *DhtNode) Run() {
 
+	//当前DHT节点运转进程
 	go func() { dht.network.Listening() }()
-	//自动结交更多DHT node进程
+
+	//自动结交更多DHT节点进程进程
 	go func() { dht.NodeFinder() }()
 
-	dht.log.Println("DhtCrawler is runing...")
+	dht.log.Println(fmt.Sprintf("DhtCrawler %s is runing...", dht.network.Conn.LocalAddr().String()))
 
 	for {
 		select {

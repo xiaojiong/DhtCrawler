@@ -35,7 +35,6 @@ func (nw *Network) Listening() {
 	for {
 		_, raddr, err := nw.Conn.ReadFromUDP(buf)
 		if err != nil {
-			//nw.ownNode.Log.Printf("Read error, %s", err)
 			continue
 		}
 

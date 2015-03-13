@@ -95,12 +95,12 @@ func (krpc *KRPC) Response(msg *KRPCMessage) {
 
 func (krpc *KRPC) Query(msg *KRPCMessage) {
 	if query, ok := msg.Addion.(*Query); ok {
-		//krpc.Dht.log.Println(query.Y) //干掉输出避免磁盘写盘的情况
+
 		if query.Y == "get_peers" {
 
 			if infohash, ok := query.A["info_hash"].(string); ok {
-				krpc.Dht.dao.HashIns1.Exec(Id(infohash).String())
-				//krpc.Dht.msq.addMessage(Id(infohash).String(), 1)
+
+				krpc.Dht.outChan <- Id(infohash).String()
 
 				nodes := ConvertByteStream(krpc.Dht.table.Snodes)
 				data, _ := krpc.EncodingNodeResult(msg.T, "asdf13e", nodes)
@@ -110,7 +110,7 @@ func (krpc *KRPC) Query(msg *KRPCMessage) {
 
 		if query.Y == "announce_peer" {
 			if infohash, ok := query.A["info_hash"].(string); ok {
-				krpc.Dht.msq.addMessage(Id(infohash).String(), 2)
+				krpc.Dht.outChan <- Id(infohash).String()
 			}
 		}
 	}
